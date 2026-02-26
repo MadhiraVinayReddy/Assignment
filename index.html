@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Conductor's Digital Companion</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;700&display=swap');
+
+  :root {
+    --ink: #0A0A0A;
+    --paper: #F5F0E8;
+    --amber: #FF9500;
+    --amber-dark: #CC7700;
+    --amber-glow: rgba(255,149,0,0.15);
+    --green: #00CC66;
+    --red: #FF3B30;
+    --surface: #1A1A1A;
+    --surface2: #242424;
+    --surface3: #2E2E2E;
+    --muted: #888;
+    --border: rgba(255,255,255,0.08);
+    --text: #F0EBE0;
+    --text-dim: rgba(240,235,224,0.5);
+    --radius: 16px;
+    --ticket-h: 72px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    background: #111;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    padding: 24px 16px 80px;
+    font-family: 'Barlow', sans-serif;
+    color: var(--text);
+  }
+
+  /* ── ANNOTATION LAYER ─────────────────────────────────────── */
+  .annotation-panel {
+    max-width: 900px;
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    align-items: start;
+  }
+
+  .design-notes {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .section-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 4px;
+  }
+
+  .note-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+  }
+
+  .note-card h3 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+
+  .note-card p {
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--text-dim);
+  }
+
+  .note-card .tag {
+    display: inline-block;
+    background: var(--amber-glow);
+    border: 1px solid rgba(255,149,0,0.3);
+    color: var(--amber);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+  }
+
+  /* ── PHONE SHELL ─────────────────────────────────────────── */
+  .phone-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .phone {
+    width: 320px;
+    background: #0D0D0D;
+    border-radius: 44px;
+    border: 2px solid #333;
+    box-shadow: 0 40px 80px rgba(0,0,0,0.7), inset 0 0 0 1px rgba(255,255,255,0.05);
+    overflow: hidden;
+    position: relative;
+  }
+
+  .phone-notch {
+    height: 36px;
+    background: #0D0D0D;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 6px;
+  }
+  .phone-pill { width: 100px; height: 28px; background: #1A1A1A; border-radius: 99px; }
+
+  .screen {
+    background: var(--ink);
+    min-height: 640px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* ── STATUS BAR ──────────────────────────────────────────── */
+  .status-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 20px 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+  }
+
+  .status-left { display: flex; gap: 6px; align-items: center; }
+  .status-time { font-size: 12px; font-weight: 700; color: var(--text); }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+
+  /* ── HEADER ──────────────────────────────────────────────── */
+  .app-header {
+    padding: 10px 20px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .route-badge {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .route-num {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 38px;
+    font-weight: 900;
+    line-height: 1;
+    color: var(--amber);
+    letter-spacing: -1px;
+  }
+
+  .route-name {
+    font-size: 10px;
+    color: var(--text-dim);
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    margin-top: 2px;
+  }
+
+  .shift-info {
+    text-align: right;
+  }
+
+  .shift-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .shift-val {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  /* ── CURRENT STOP ─────────────────────────────────────────── */
+  .current-stop-bar {
+    background: var(--surface);
+    margin: 0 12px;
+    border-radius: 10px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+  }
+
+  .stop-icon {
+    width: 28px; height: 28px;
+    background: var(--amber);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; flex-shrink: 0;
+  }
+
+  .stop-meta { flex: 1; }
+  .stop-label { font-size: 9px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.1em; }
+  .stop-name { font-family: 'Barlow Condensed', sans-serif; font-size: 17px; font-weight: 700; color: var(--text); line-height: 1.1; }
+
+  .stop-next {
+    text-align: right;
+  }
+  .next-label { font-size: 9px; color: var(--text-dim); }
+  .next-name { font-size: 11px; color: var(--amber); font-weight: 600; }
+
+  /* ── PAX SELECTOR ─────────────────────────────────────────── */
+  .pax-row {
+    display: flex;
+    gap: 8px;
+    padding: 12px 12px 0;
+  }
+
+  .pax-section-label {
+    font-size: 9px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 0 12px;
+    margin-top: 12px;
+    margin-bottom: 6px;
+  }
+
+  .pax-btn {
+    flex: 1;
+    height: 52px;
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface);
+    color: var(--text);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.12s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .pax-btn span.sub {
+    font-size: 8px;
+    font-family: 'Barlow', sans-serif;
+    font-weight: 500;
+    color: var(--text-dim);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+
+  .pax-btn.selected {
+    border-color: var(--amber);
+    background: var(--amber-glow);
+    color: var(--amber);
+  }
+
+  .pax-btn.selected span.sub { color: var(--amber); opacity: 0.7; }
+
+  .pax-btn:active { transform: scale(0.94); }
+
+  /* ── DESTINATION GRID ─────────────────────────────────────── */
+  .dest-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 0 12px;
+    margin-top: 8px;
+    flex: 1;
+  }
+
+  .dest-btn {
+    height: var(--ticket-h);
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    padding: 10px 14px;
+    text-align: left;
+    transition: all 0.12s;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .dest-name {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.1;
+    color: var(--text);
+  }
+
+  .dest-fare {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--amber);
+  }
+
+  .dest-km {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 9px;
+    color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .dest-btn:active, .dest-btn.tapped { transform: scale(0.96); }
+  
+  .dest-btn.selected {
+    border-color: var(--amber);
+    background: var(--amber-glow);
+  }
+
+  .dest-btn.selected .dest-name { color: var(--amber); }
+
+  /* ── SEARCH BAR ──────────────────────────────────────────── */
+  .search-bar {
+    margin: 8px 12px 0;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+  }
+
+  .search-icon { font-size: 14px; opacity: 0.4; }
+  .search-placeholder {
+    font-size: 13px;
+    color: var(--text-dim);
+    flex: 1;
+  }
+
+  /* ── ISSUE BUTTON ─────────────────────────────────────────── */
+  .issue-bar {
+    padding: 10px 12px 12px;
+    position: sticky;
+    bottom: 0;
+    background: linear-gradient(to top, var(--ink) 80%, transparent);
+  }
+
+  .issue-btn {
+    width: 100%;
+    height: 58px;
+    background: var(--amber);
+    border: none;
+    border-radius: 16px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 22px;
+    font-weight: 900;
+    color: var(--ink);
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    transition: all 0.12s;
+    box-shadow: 0 4px 24px rgba(255,149,0,0.35);
+  }
+
+  .issue-btn:active { transform: scale(0.98); box-shadow: 0 2px 12px rgba(255,149,0,0.2); }
+
+  .issue-meta {
+    text-align: right;
+  }
+
+  .issue-total {
+    font-size: 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+  }
+
+  .issue-desc {
+    font-size: 10px;
+    font-family: 'Barlow', sans-serif;
+    font-weight: 500;
+    opacity: 0.6;
+  }
+
+  /* ── SUCCESS FLASH ────────────────────────────────────────── */
+  .success-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 204, 102, 0.95);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s;
+    z-index: 10;
+  }
+
+  .success-overlay.show {
+    opacity: 1;
+    pointer-events: all;
+    animation: flashOut 1.6s forwards;
+  }
+
+  @keyframes flashOut {
+    0% { opacity: 1; }
+    70% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+
+  .success-icon { font-size: 56px; }
+  .success-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 32px;
+    font-weight: 900;
+    color: var(--ink);
+    letter-spacing: 0.05em;
+  }
+
+  .success-detail {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: rgba(0,0,0,0.6);
+  }
+
+  .ticket-stub {
+    background: rgba(0,0,0,0.15);
+    border-radius: 12px;
+    padding: 12px 20px;
+    text-align: center;
+    margin-top: 4px;
+  }
+
+  .stub-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 4px;
+  }
+
+  .stub-item {
+    text-align: center;
+  }
+
+  .stub-label {
+    font-size: 9px;
+    color: rgba(0,0,0,0.5);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    display: block;
+  }
+
+  .stub-val {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--ink);
+  }
+
+  /* ── NAVIGATION FLOW DIAGRAM ─────────────────────────────── */
+  .flow-diagram {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    margin-top: 0;
+  }
+
+  .flow-step {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    margin-bottom: 12px;
+  }
+
+  .flow-step:last-child { margin-bottom: 0; }
+
+  .step-num {
+    width: 22px; height: 22px;
+    background: var(--amber);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--ink);
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .step-content h4 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 2px;
+  }
+
+  .step-content p {
+    font-size: 12px;
+    color: var(--text-dim);
+    line-height: 1.5;
+  }
+
+  .flow-arrow {
+    display: flex;
+    justify-content: center;
+    color: var(--text-dim);
+    font-size: 12px;
+    margin: -4px 0;
+  }
+
+  /* ── REACHABILITY MAP ─────────────────────────────────────── */
+  .reach-map {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .thumb-zone {
+    width: 80px;
+    height: 160px;
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  .zone-svg { width: 100%; height: 100%; }
+
+  .reach-legend {
+    flex: 1;
+  }
+
+  .legend-item {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+
+  .legend-dot {
+    width: 10px; height: 10px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+
+  .legend-dot.easy { background: #00CC66; }
+  .legend-dot.ok { background: #FF9500; }
+  .legend-dot.hard { background: #FF3B30; opacity: 0.5; }
+
+  /* ── HEADER LABEL ─────────────────────────────────────────── */
+  .big-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 28px;
+    font-weight: 900;
+    color: var(--text);
+    letter-spacing: -0.5px;
+    line-height: 1;
+  }
+
+  .big-sub {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-top: 4px;
+  }
+
+  /* ── TIMER BADGE ─────────────────────────────────────────── */
+  .timer-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,59,48,0.15);
+    border: 1px solid rgba(255,59,48,0.3);
+    border-radius: 20px;
+    padding: 4px 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--red);
+    font-weight: 700;
+    margin-top: 8px;
+  }
+
+  .timer-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--red); animation: pulse 1s infinite; }
+
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+
+  /* ── FULL LAYOUT ─────────────────────────────────────────── */
+  @media (max-width: 600px) {
+    .annotation-panel {
+      grid-template-columns: 1fr;
+    }
+    .phone-wrap { order: -1; }
+  }
+</style>
+</head>
+<body>
+
+<div class="annotation-panel">
+
+  <!-- LEFT: DESIGN NOTES -->
+  <div class="design-notes">
+    
+    <div>
+      <div class="big-label">Conductor's<br>Digital Companion</div>
+      <div class="big-sub">UI Brief — BMTC / BEST Bus Ticketing System</div>
+      <div class="timer-badge">
+        <span class="timer-dot"></span>
+        Target: Ticket issued in &lt;4 seconds
+      </div>
+    </div>
+
+    <!-- Flow -->
+    <div class="note-card">
+      <div class="tag">Navigation Flow</div>
+      <div class="flow-diagram" style="background:transparent;border:none;padding:0;">
+        <div class="flow-step">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <h4>Open App → Current Stop Auto-Detected</h4>
+            <p>GPS + route data pre-loads the 6 most likely next stops. Zero navigation required.</p>
+          </div>
+        </div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-step">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <h4>Tap Passenger Count (1–4)</h4>
+            <p>Large 52px-tall targets in a single row. No scrolling. Thumb never leaves bottom half.</p>
+          </div>
+        </div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-step">
+          <div class="step-num">3</div>
+          <div class="step-content">
+            <h4>Tap Destination Stop</h4>
+            <p>6 pre-loaded stops in a 2×3 grid. Each cell shows name + fare. Most common on top-left.</p>
+          </div>
+        </div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-step">
+          <div class="step-num">4</div>
+          <div class="step-content">
+            <h4>Issue Ticket — Full-Width CTA</h4>
+            <p>Amber 58px button shows total fare. Haptic feedback on press. Green flash confirms.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reachability -->
+    <div class="note-card">
+      <div class="tag">Reachability Strategy</div>
+      <h3>Bottom-Anchored Layout</h3>
+      <p style="margin-bottom:12px;">All primary actions live in the bottom 65% of the screen — the natural thumb arc for right-handed grip on a 6" phone held in moving transit.</p>
+      <div class="reach-map">
+        <div class="thumb-zone">
+          <svg class="zone-svg" viewBox="0 0 80 160" fill="none">
+            <!-- Phone outline -->
+            <rect x="10" y="2" width="60" height="156" rx="14" fill="#1A1A1A" stroke="#333" stroke-width="1.5"/>
+            <!-- Hard zone: top -->
+            <rect x="10" y="2" width="60" height="55" rx="14" fill="rgba(255,59,48,0.12)"/>
+            <!-- OK zone: middle -->
+            <rect x="10" y="57" width="60" height="48" fill="rgba(255,149,0,0.15)"/>
+            <!-- Easy zone: bottom -->
+            <rect x="10" y="105" width="60" height="53" rx="0" fill="rgba(0,204,102,0.2)"/>
+            <!-- Bottom rounded corners -->
+            <rect x="10" y="105" width="60" height="53" rx="0" fill="transparent"/>
+            <path d="M10 145 Q10 158 24 158 L56 158 Q70 158 70 145 L70 105 L10 105 Z" fill="rgba(0,204,102,0.2)"/>
+            <!-- Labels -->
+            <text x="40" y="30" text-anchor="middle" fill="rgba(255,59,48,0.7)" font-size="7" font-family="sans-serif">Route / Status</text>
+            <text x="40" y="80" text-anchor="middle" fill="rgba(255,149,0,0.8)" font-size="7" font-family="sans-serif">Destinations</text>
+            <text x="40" y="132" text-anchor="middle" fill="rgba(0,204,102,0.9)" font-size="7" font-family="sans-serif">PAX + Issue</text>
+            <!-- Thumb arc -->
+            <path d="M65 130 Q52 110 48 75" stroke="rgba(255,255,255,0.2)" stroke-width="1.5" stroke-dasharray="3,3" fill="none"/>
+            <circle cx="65" cy="130" r="4" fill="rgba(255,255,255,0.3)"/>
+          </svg>
+        </div>
+        <div class="reach-legend">
+          <div class="legend-item"><div class="legend-dot easy"></div>Issue + PAX count — easiest reach</div>
+          <div class="legend-item"><div class="legend-dot ok"></div>Destination grid — comfortable stretch</div>
+          <div class="legend-item"><div class="legend-dot hard"></div>Route info — read-only, no tapping</div>
+          <p style="font-size:11px;color:var(--text-dim);margin-top:4px;">Thumb never needs to cross screen midpoint for a complete ticket transaction.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Visibility -->
+    <div class="note-card">
+      <div class="tag">Glanceability</div>
+      <h3>High-Contrast Design System</h3>
+      <p>Amber (#FF9500) on near-black exceeds WCAG AAA. <strong style="color:var(--text);">Barlow Condensed at 700–900 weight</strong> allows large text within tight screen real estate. Stop names at 17px+ condensed = readable at arm's length in sunlight. Fare shown in monospace for instant numeric parsing.</p>
+    </div>
+
+    <!-- Assumptions -->
+    <div class="note-card">
+      <div class="tag">Assumptions</div>
+      <h3>Design Decisions</h3>
+      <p><strong style="color:var(--text);">Pre-populated stops:</strong> GPS + route knowledge populates the 6 most common onward destinations. Edge case overflow goes to search.<br><br>
+      <strong style="color:var(--text);">Concession types (student, senior):</strong> Long-press on a PAX button opens concession sheet — not in main flow to preserve speed.<br><br>
+      <strong style="color:var(--text);">Return journey:</strong> Separate "Return" toggle pre-selects current stop as destination.<br><br>
+      <strong style="color:var(--text);">Connectivity:</strong> Offline-first — all route/fare data synced at shift start. Tickets queue and sync when signal returns.</p>
+    </div>
+
+  </div>
+
+  <!-- RIGHT: PHONE MOCKUP -->
+  <div class="phone-wrap">
+    <div class="phone">
+      <div class="phone-notch"><div class="phone-pill"></div></div>
+      <div class="screen" id="screen">
+
+        <!-- Status Bar -->
+        <div class="status-bar">
+          <div class="status-left">
+            <div class="dot"></div>
+            <span>LIVE</span>
+          </div>
+          <span class="status-time">09:41</span>
+          <span>●●●  📶  🔋</span>
+        </div>
+
+        <!-- Header -->
+        <div class="app-header">
+          <div class="route-badge">
+            <div class="route-num">335E</div>
+            <div class="route-name">Kempegowda → Whitefield</div>
+          </div>
+          <div class="shift-info">
+            <div class="shift-label">Conductor</div>
+            <div class="shift-val">R. Nair</div>
+            <div class="shift-label" style="margin-top:4px;">Tickets Today</div>
+            <div class="shift-val" style="color:var(--amber);">147</div>
+          </div>
+        </div>
+
+        <!-- Current Stop -->
+        <div class="current-stop-bar">
+          <div class="stop-icon">📍</div>
+          <div class="stop-meta">
+            <div class="stop-label">Current Stop</div>
+            <div class="stop-name">Trinity Circle</div>
+          </div>
+          <div class="stop-next">
+            <div class="next-label">Next</div>
+            <div class="next-name">Ulsoor Road</div>
+          </div>
+        </div>
+
+        <!-- PAX Selector -->
+        <div class="pax-section-label">Passengers</div>
+        <div class="pax-row">
+          <button class="pax-btn" onclick="selectPax(this, 1)">1<span class="sub">adult</span></button>
+          <button class="pax-btn selected" onclick="selectPax(this, 2)">2<span class="sub">adults</span></button>
+          <button class="pax-btn" onclick="selectPax(this, 3)">3<span class="sub">adults</span></button>
+          <button class="pax-btn" onclick="selectPax(this, 4)">4<span class="sub">adults</span></button>
+        </div>
+
+        <!-- Search -->
+        <div class="search-bar">
+          <span class="search-icon">🔍</span>
+          <span class="search-placeholder">Search all stops…</span>
+        </div>
+
+        <!-- Destination Grid -->
+        <div class="pax-section-label" style="margin-top:10px;">Destination</div>
+        <div class="dest-grid">
+          <button class="dest-btn selected" onclick="selectDest(this, 'Ulsoor Road', 12, 2)">
+            <span class="dest-km">1.2 km</span>
+            <div class="dest-name">Ulsoor Road</div>
+            <div class="dest-fare">₹12</div>
+          </button>
+          <button class="dest-btn" onclick="selectDest(this, 'Indiranagar', 18, 3)">
+            <span class="dest-km">3.1 km</span>
+            <div class="dest-name">Indiranagar</div>
+            <div class="dest-fare">₹18</div>
+          </button>
+          <button class="dest-btn" onclick="selectDest(this, 'Domlur', 22, 4)">
+            <span class="dest-km">4.8 km</span>
+            <div class="dest-name">Domlur</div>
+            <div class="dest-fare">₹22</div>
+          </button>
+          <button class="dest-btn" onclick="selectDest(this, 'Marthahalli', 32, 7)">
+            <span class="dest-km">9.2 km</span>
+            <div class="dest-name">Marthahalli</div>
+            <div class="dest-fare">₹32</div>
+          </button>
+          <button class="dest-btn" onclick="selectDest(this, 'ITPL Main Gate', 42, 12)">
+            <span class="dest-km">16 km</span>
+            <div class="dest-name">ITPL Main Gate</div>
+            <div class="dest-fare">₹42</div>
+          </button>
+          <button class="dest-btn" onclick="selectDest(this, 'Whitefield', 50, 18)">
+            <span class="dest-km">22 km</span>
+            <div class="dest-name">Whitefield</div>
+            <div class="dest-fare">₹50</div>
+          </button>
+        </div>
+
+        <!-- Issue Button -->
+        <div class="issue-bar">
+          <button class="issue-btn" id="issueBtn" onclick="issueTicket()">
+            <span>ISSUE TICKET</span>
+            <div class="issue-meta">
+              <div class="issue-total" id="totalDisplay">₹24</div>
+              <div class="issue-desc" id="issueDesc">2 × Ulsoor Road</div>
+            </div>
+          </button>
+        </div>
+
+        <!-- Success Overlay -->
+        <div class="success-overlay" id="successOverlay">
+          <div class="success-icon">✓</div>
+          <div class="success-title">TICKET ISSUED</div>
+          <div class="success-detail" id="successDetail">2 pax → Ulsoor Road</div>
+          <div class="ticket-stub">
+            <div class="stub-row">
+              <div class="stub-item">
+                <span class="stub-label">Pax</span>
+                <span class="stub-val" id="stubPax">2</span>
+              </div>
+              <div class="stub-item">
+                <span class="stub-label">Fare</span>
+                <span class="stub-val" id="stubFare">₹24</span>
+              </div>
+              <div class="stub-item">
+                <span class="stub-label">Stop</span>
+                <span class="stub-val" id="stubDest" style="font-size:13px;">Ulsoor</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /screen -->
+    </div><!-- /phone -->
+
+    <div style="font-size:11px; color:var(--text-dim); text-align:center; max-width: 280px; line-height:1.5;">
+      ↑ Interactive mockup — tap passenger count, select destination, press Issue Ticket
+    </div>
+  </div>
+
+</div>
+
+<script>
+  let selectedPax = 2;
+  let selectedFare = 12;
+  let selectedDest = 'Ulsoor Road';
+  let selectedStops = 2;
+
+  function selectPax(btn, count) {
+    document.querySelectorAll('.pax-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    selectedPax = count;
+    updateTotal();
+  }
+
+  function selectDest(btn, name, fare, stops) {
+    document.querySelectorAll('.dest-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    selectedFare = fare;
+    selectedDest = name;
+    selectedStops = stops;
+    updateTotal();
+  }
+
+  function updateTotal() {
+    const total = selectedPax * selectedFare;
+    document.getElementById('totalDisplay').textContent = '₹' + total;
+    document.getElementById('issueDesc').textContent = selectedPax + ' × ' + selectedDest;
+  }
+
+  function issueTicket() {
+    const total = selectedPax * selectedFare;
+    document.getElementById('successDetail').textContent = selectedPax + ' pax → ' + selectedDest;
+    document.getElementById('stubPax').textContent = selectedPax;
+    document.getElementById('stubFare').textContent = '₹' + total;
+    document.getElementById('stubDest').textContent = selectedDest.split(' ')[0];
+    
+    const overlay = document.getElementById('successOverlay');
+    overlay.classList.remove('show');
+    void overlay.offsetWidth; // reflow
+    overlay.classList.add('show');
+    
+    setTimeout(() => {
+      overlay.classList.remove('show');
+    }, 1700);
+  }
+</script>
+
+</body>
+</html>
